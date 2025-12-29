@@ -1,0 +1,296 @@
+// ======================================
+// Datasource & Generator
+// ======================================
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  relationMode = "foreignKeys"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ======================================
+// ENUMS
+// ======================================
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum VolunteerRole {
+  MEMBER
+  ORG
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum EventStatus {
+  UPCOMING
+  ONGOING
+  FINISHED
+  CANCELED
+}
+
+enum NotificationType {
+  SYSTEM
+  EVENT
+  ORGANIZATION
+}
+
+enum OrganizationType {
+  NGO // Phi Chính phủ...
+  SCHOOL //Giáo dục
+  HOSPITAL // Y tế
+  COMMUNITY //Cộng đồng
+  ENVIRONMENTAL //Môi trường
+}
+
+// ======================================
+// MODELS
+// ======================================
+
+model Country {
+  id         Int         @id @default(autoincrement()) @map("ID_COUNTRY")
+  name       String?     @unique @map("NAME")
+  volunteers Volunteer[]
+
+  @@map("COUNTRY")
+}
+
+model Volunteer {
+  id            Int           @id @default(autoincrement()) @map("ID_USER")
+  countryId     Int           @map("ID_COUNTRY")
+
+  fullName      String?       @map("FULLNAME")
+  email         String?       @unique @map("EMAIL")
+  phone         String?       @unique @map("PHONE")
+  password      String?       @map("PASSWORD")
+  avatar        String?       @map("AVATAR")
+  gender        Gender?       @map("GENDER")
+  dateOfBirth   DateTime?     @map("DATEOFBIRTH")
+  address       String?       @map("ADDRESS")
+  bio           String?       @map("BIO")
+  role          VolunteerRole?@map("ROLE")
+  isActive      Boolean?      @map("ISACTIVE")
+  refreshToken  String?       @map("REFRESHTOKEN")
+  emailVerified Boolean?      @map("EMAILVERIFIED")
+  lastLogin     DateTime?     @map("LASTLOGIN")
+  createdAt     DateTime      @default(now()) @map("CREATEDAT")
+  updatedAt     DateTime      @default(now()) @map("UPDATEDAT")
+
+  country       Country       @relation(fields: [countryId], references: [id])
+
+  joins         Join[]
+  participations Participation[]
+  userSkills    UserSkill[]
+  locations     VolunteerLocation[]
+  supportRecords SupportForVolunteers[]
+  notifications NotificationUser[]
+
+  @@index([email])
+  @@index([phone])
+  @@index([countryId])
+  @@map("VOLUNTEER")
+}
+
+model Organization {
+  id             Int               @id @default(autoincrement()) @map("ID_ORGANIZATION")
+  name           String?           @unique @map("NAME")
+  type           OrganizationType? @map("TYPE")
+
+  events         Event[]
+  participations Participation[]
+
+  @@map("ORGANIZATION")
+}
+model Event {
+  id                  Int         @id @default(autoincrement()) @map("ID_EVENT")
+  organizationId      Int         @map("ID_ORGANIZATION")
+  communeId           Int         @map("ID_COMMUNE")
+
+  title               String?     @map("TITLE")
+  description         String?     @map("DESCRIPTION")
+  image               String?     @map("IMAGE")
+
+  maxVolunteers       Int         @default(0) @map("MAXVOLUNTEERS")
+  currentParticipants Int         @default(0) @map("CURRENTPARTICIPANTS")
+
+  address             String?     @map("ADDRESS")
+  startDate           DateTime?   @map("STARTDATE")
+  endDate             DateTime?   @map("ENDDATE")
+  status              EventStatus?@map("STATUS")
+  isApproved          Boolean      @default(false) @map("ISAPPROVED") // duyệt admin
+
+  createdAt           DateTime    @default(now()) @map("CREATEDAT")
+  updatedAt           DateTime    @default(now()) @map("UPDATEDAT")
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  commune      Commune      @relation(fields: [communeId], references: [id])
+
+  skills        EventSkill[]
+  joins         Join[]
+  notifications Notification[]
+
+  @@index([organizationId])
+  @@index([communeId])
+  @@index([status])
+  @@map("EVENT")
+}
+
+model Skill {
+  id         Int        @id @default(autoincrement()) @map("ID_SKILL")
+  name       String?    @unique @map("NAME")
+
+  userSkills  UserSkill[]
+  eventSkills EventSkill[]
+
+  @@map("SKILL")
+}
+
+model UserSkill {
+  userId  Int @map("ID_USER")
+  skillId Int @map("ID_SKILL")
+
+  user  Volunteer @relation(fields: [userId], references: [id])
+  skill Skill     @relation(fields: [skillId], references: [id])
+
+  @@id([userId, skillId])
+  @@index([skillId])
+  @@map("USERSKILL")
+}
+
+model EventSkill {
+  eventId Int @map("ID_EVENT")
+  skillId Int @map("ID_SKILL")
+
+  event Event @relation(fields: [eventId], references: [id])
+  skill Skill @relation(fields: [skillId], references: [id])
+
+  @@id([eventId, skillId])
+  @@index([skillId])
+  @@map("EVENTSKILL")
+}
+
+model SupportTask {
+  id         Int                   @id @default(autoincrement()) @map("ID_LIST")
+  name       String?               @unique @map("NAME")
+
+  volunteers SupportForVolunteers[]
+
+  @@map("LIST_OF_SUPPORT_TASKS")
+}
+
+model SupportForVolunteers {
+  listId Int @map("ID_LIST")
+  userId Int @map("ID_USER")
+
+  startDate DateTime? @map("STARTDATE")
+  endDate   DateTime? @map("ENDDATE")
+  note      String?   @map("NOTE")
+
+  task      SupportTask @relation(fields: [listId], references: [id])
+  volunteer Volunteer   @relation(fields: [userId], references: [id])
+
+  @@id([listId, userId])
+  @@index([userId])
+  @@map("SUPPORTFORVOLUNTEERS")
+}
+
+model Participation {
+  userId         Int @map("ID_USER")
+  organizationId Int @map("ID_ORGANIZATION")
+
+  startDate DateTime? @map("STARTDATE")
+  endDate   DateTime? @map("ENDDATE")
+
+  volunteer    Volunteer    @relation(fields: [userId], references: [id])
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@id([userId, organizationId])
+  @@index([organizationId])
+  @@map("PARTICIPATION")
+}
+
+model Join {
+  userId  Int @map("ID_USER")
+  eventId Int @map("ID_EVENT")
+
+  startDate   DateTime? @map("STARTDATE")
+  endDate     DateTime? @map("ENDDATE")
+  description String?   @map("DESCRIPTION")
+
+  volunteer Volunteer @relation(fields: [userId], references: [id])
+  event     Event     @relation(fields: [eventId], references: [id])
+
+  @@id([userId, eventId])
+  @@index([eventId])
+  @@map("JOIN")
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement()) @map("ID_NOTIFICATION")
+  eventId   Int              @map("ID_EVENT")
+
+  title     String?           @map("TITLE")
+  content   String?           @map("CONTENT")
+  type      NotificationType? @map("TYPE")
+
+  createdAt DateTime          @default(now()) @map("CREATEDAT")
+
+  event Event @relation(fields: [eventId], references: [id])
+  users NotificationUser[]
+
+  @@index([eventId])
+  @@map("NOTIFICATION")
+}
+
+model NotificationUser {
+  userId         Int @map("ID_USER")
+  notificationId Int @map("ID_NOTIFICATION")
+  isRead         Boolean? @map("ISREAD")
+
+  volunteer    Volunteer    @relation(fields: [userId], references: [id])
+  notification Notification @relation(fields: [notificationId], references: [id])
+
+  @@id([userId, notificationId])
+  @@index([notificationId])
+  @@map("NOTIFICATION_USER")
+}
+
+model Province {
+  id       Int      @id @default(autoincrement()) @map("ID_PROVINCE")
+  name     String?  @unique @map("NAME")
+
+  communes Commune[]
+
+  @@map("PROVINCE")
+}
+
+model Commune {
+  id         Int      @id @default(autoincrement()) @map("ID_COMMUNE")
+  provinceId Int      @map("ID_PROVINCE")
+  name       String?  @map("NAME")
+
+  province Province @relation(fields: [provinceId], references: [id])
+  events   Event[]
+  locations VolunteerLocation[]
+
+  @@unique([provinceId, name])
+  @@index([provinceId])
+  @@map("COMMUNE")
+}
+
+model VolunteerLocation {
+  communeId Int @map("ID_COMMUNE")
+  userId    Int @map("ID_USER")
+
+  commune    Commune    @relation(fields: [communeId], references: [id])
+  volunteer  Volunteer  @relation(fields: [userId], references: [id])
+
+  @@id([communeId, userId])
+  @@index([userId])
+  @@map("LOCATION_USER")
+}

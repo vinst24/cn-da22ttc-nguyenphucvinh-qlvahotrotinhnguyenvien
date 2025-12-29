@@ -1,0 +1,59 @@
+/* src/app.css */
+
+/* Button style global */
+.btn-primary {
+  @apply bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition-colors;
+}
+
+/* Form container */
+.form-container {
+  @apply bg-white p-8 rounded-lg shadow-md w-full max-w-md mx-auto;
+}
+
+/* Input fields */
+.input-field {
+  @apply w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-4;
+}
+
+/* Headings */
+.heading {
+  @apply text-2xl font-bold mb-6 text-center;
+}
+
+.form-container {
+  @apply bg-white p-8 rounded-lg shadow-md w-full max-w-md;
+}
+.heading {
+  @apply text-2xl font-bold mb-6 text-center;
+}
+.input-field {
+  @apply w-full border border-gray-300 p-2 rounded-md mb-4;
+}
+
+/* tailwind config already included */
+.input-field {
+  @apply border rounded-md py-2 px-3 outline-none focus:border-blue-500 transition-all;
+}
+
+
+.input {
+  @apply w-full rounded-lg border border-gray-300
+    bg-white px-4 py-2.5 text-sm text-gray-800
+    placeholder-gray-400
+    focus:border-green-500 focus:ring-2 focus:ring-green-200
+    outline-none transition;
+}
+
+textarea.input {
+  @apply min-h-[100px] resize-y;
+}
+
+.error {
+  @apply text-xs text-red-500 mt-1;
+}
+.input:hover {
+  @apply border-gray-400;
+}
+.input:disabled {
+  @apply bg-gray-100 cursor-not-allowed;
+}

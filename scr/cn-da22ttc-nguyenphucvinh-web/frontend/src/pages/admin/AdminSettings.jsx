@@ -1,9 +1,9 @@
 import {
-  Image as ImageIcon,
-  Lock,
-  Mail,
-  ShieldCheck,
-  User
+    Image as ImageIcon,
+    Lock,
+    Mail,
+    ShieldCheck,
+    User
 } from "lucide-react";
 import { useState } from "react";
 
@@ -110,7 +110,7 @@ export default function AdminSettings() {
               <div className="relative group">
                 <img
                   src={
-                    avatarPreview ? avatarPreview : "https://i.pravatar.cc/120"
+                    avatarPreview ? avatarPreview : "/default-avatar.png"
                   }
                   alt="avatar"
                   className="w-28 h-28 rounded-full border object-cover shadow-sm transition-transform transform group-hover:scale-105"

@@ -77,7 +77,7 @@ export default function Topbar(props) {
     navigate("/");
   };
 
-  var avatar = user && user.avatar ? user.avatar : "https://i.pravatar.cc/40";
+  var avatar = user && user.avatar ? user.avatar : "/default-avatar.png";
 
   return (
     <header

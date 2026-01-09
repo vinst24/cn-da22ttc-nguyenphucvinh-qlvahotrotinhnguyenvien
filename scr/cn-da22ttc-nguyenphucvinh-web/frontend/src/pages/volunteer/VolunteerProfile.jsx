@@ -174,7 +174,7 @@ export default function VolunteerProfile() {
               {/* AVATAR */}
               <div className="flex items-center gap-4">
                 <img
-                  src={avatarPreview || "https://i.pravatar.cc/100"}
+                  src={avatarPreview || "/default-avatar.png"}
                   alt="avatar"
                   className="w-20 h-20 rounded-full border"
                 />

@@ -60,6 +60,18 @@ model Country {
   @@map("COUNTRY")
 }
 
+model PasswordReset {
+  id        Int       @id @default(autoincrement()) @map("ID_RESET")
+  userId    Int       @map("ID_USER")
+  token     String    @unique @map("TOKEN")
+  expiresAt DateTime  @map("EXPIRESAT")
+  createdAt DateTime  @default(now()) @map("CREATEDAT")
+
+  @@index([token])
+  @@index([userId])
+  @@map("PASSWORD_RESET")
+}
+
 model Volunteer {
   id            Int           @id @default(autoincrement()) @map("ID_USER")
   countryId     Int           @map("ID_COUNTRY")
@@ -232,7 +244,7 @@ model Join {
 
 model Notification {
   id        Int              @id @default(autoincrement()) @map("ID_NOTIFICATION")
-  eventId   Int              @map("ID_EVENT")
+  eventId   Int?             @map("ID_EVENT")
 
   title     String?           @map("TITLE")
   content   String?           @map("CONTENT")
@@ -240,7 +252,7 @@ model Notification {
 
   createdAt DateTime          @default(now()) @map("CREATEDAT")
 
-  event Event @relation(fields: [eventId], references: [id])
+  event Event? @relation(fields: [eventId], references: [id])
   users NotificationUser[]
 
   @@index([eventId])

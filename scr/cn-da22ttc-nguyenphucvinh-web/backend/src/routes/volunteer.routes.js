@@ -1,4 +1,3 @@
-// routes/volunteer.routes.js
 import express from "express";
 import multer from "multer";
 import {
@@ -8,6 +7,7 @@ import {
   getRegisteredEvents,
   getVolunteer,
   registerEvent,
+  unregisterEvent,
   updateVolunteer,
   uploadAvatar
 } from "../controllers/volunteer.controller.js";
@@ -42,6 +42,7 @@ const upload = multer({
 // EVENT
 router.get("/available", verifyToken, getAvailableEvents);
 router.post("/register-event/:id", verifyToken, registerEvent);
+router.post("/unregister-event/:id", verifyToken, unregisterEvent);
 
 // PROFILE
 router.get("/:id", verifyToken, getVolunteer);

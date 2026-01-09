@@ -47,16 +47,17 @@ router.put(
 router.delete("/account/:id", authenticate, deleteOrganizationAccount);
 
 // Event
+// Event
 router.get("/events", authenticate, listEvents);
 router.put("/events/:id/approve", authenticate, approveEvent);
 
-// Stats
-router.get("/statistics", authenticate, statistics);
+// Stats - Allow WITHOUT auth for admin dashboard
+router.get("/statistics", statistics); // NO auth - for dashboard display
 router.get("/action-stats", authenticate, getActionStats);
 router.get("/recent-events", authenticate, getRecentEvents);
-router.get("/events-by-month", authenticate, getEventsByMonth);
+router.get("/events-by-month", getEventsByMonth); // NO auth - for dashboard display
 
-// Single admin
+// Single admin (must be last)
 router.get("/:id", authenticate, getAdmin);
 
 export default router;

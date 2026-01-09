@@ -73,7 +73,7 @@ export default function OrgSettings() {
       alert(
         err && err.response && err.response.data && err.response.data.message
           ? err.response.data.message
-          : "Lỗi server"
+          : "Lỗi cập nhật"
       );
     } finally {
       setLoading(false);
@@ -119,7 +119,7 @@ export default function OrgSettings() {
             {/* AVATAR */}
             <div className="flex items-center gap-4">
               <img
-                src={avatarPreview || "https://i.pravatar.cc/80"}
+                src={avatarPreview || "/default-avatar.png"}
                 alt="avatar"
                 className="w-16 h-16 rounded-full border object-cover"
               />

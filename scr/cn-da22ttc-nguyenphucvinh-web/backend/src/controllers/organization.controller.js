@@ -211,6 +211,38 @@ export const createOrganizationEvent = async (req, res) => {
       }
     });
 
+    // Gửi thông báo cho ADMIN khi tổ chức tạo hoạt động mới (chờ duyệt)
+    try {
+      const adminNotification = await prisma.notification.create({
+        data: {
+          eventId: event.id,
+          title: `Hoạt động chờ duyệt: ${event.title}`,
+          content: `Tổ chức đã tạo hoạt động mới "${event.title}" và chờ duyệt từ admin. Chi tiết: ${description || "Không có mô tả"}`,
+          type: "SYSTEM"
+        }
+      });
+
+      // Gửi đến tất cả ADMIN
+      const admins = await prisma.volunteer.findMany({
+        where: { 
+          role: { in: ["ADMIN", "SUPER_ADMIN"] },
+          isActive: true
+        },
+        select: { id: true }
+      });
+
+      if (admins.length > 0) {
+        const adminNotificationUsers = admins.map(admin => ({
+          userId: admin.id,
+          notificationId: adminNotification.id,
+          isRead: false
+        }));
+        await prisma.notificationUser.createMany({ data: adminNotificationUsers });
+      }
+    } catch (err) {
+      console.error("Lỗi gửi thông báo cho admin:", err.message);
+    }
+
     res.status(201).json(event);
   } catch (err) {
     console.error(err);

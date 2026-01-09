@@ -96,7 +96,7 @@ function VolunteerRow({ volunteer }) {
     <div className="flex items-center gap-4 p-4 hover:bg-gray-50 transition">
       {/* AVATAR */}
       <img
-        src={volunteer.avatar || "https://i.pravatar.cc/40"}
+        src={volunteer.avatar || "/default-avatar.png"}
         alt="avatar"
         className="w-10 h-10 rounded-full border object-cover"
       />

@@ -7,7 +7,9 @@ import express from "express";
 import adminRoutes from "./src/routes/admin.routes.js";
 import authRoutes from "./src/routes/auth.routes.js";
 import countryRouter from "./src/routes/country.routes.js";
+import eventRoutes from "./src/routes/event.route.js";
 import locationRoutes from "./src/routes/location.routes.js";
+import notificationRoutes from "./src/routes/notification.routes.js";
 import organizationRoutes from "./src/routes/organization.routes.js";
 import volunteerRoutes from "./src/routes/volunteer.routes.js";
 
@@ -33,8 +35,10 @@ app.use("/api/auth", authRoutes);
 app.use("/api/volunteer", volunteerRoutes);
 app.use("/api/organization", organizationRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/events", eventRoutes);
 app.use("/api/locations", locationRoutes);
 app.use("/api/countries", countryRouter);
+app.use("/api/notifications", notificationRoutes);
 
 // Debug middleware (tuỳ chọn)
 app.use((req, res, next) => {

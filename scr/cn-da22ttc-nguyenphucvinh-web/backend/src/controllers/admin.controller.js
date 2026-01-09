@@ -58,7 +58,14 @@ export const getVolunteer = async (req, res) => {
   const id = parseInt(req.params.id);
 
   try {
-    const volunteer = await prisma.volunteer.findUnique({ where: { id } });
+    const volunteer = await prisma.volunteer.findUnique({
+      where: { id },
+      include: {
+        country: {
+          select: { name: true }
+        }
+      }
+    });
     if (!volunteer)
       return res.status(404).json({ message: "Volunteer không tồn tại" });
 
@@ -73,7 +80,17 @@ export const getVolunteer = async (req, res) => {
       WHERE p."ID_USER" = ${id}
     `;
 
-    res.json({ ...volunteer, organizations });
+    // attach country name if present
+    const v = {
+      ...volunteer,
+      countryName: volunteer.country ? volunteer.country.name : null,
+      organizations
+    };
+
+    // remove nested country object to keep response compact
+    delete v.country;
+
+    res.json(v);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -270,21 +287,35 @@ export const updateOrganization = async (req, res) => {
 export const addOrganizationAccount = async (req, res) => {
   try {
     const orgId = parseInt(req.params.id, 10);
-    const { email, password, countryId } = req.body;
+    const {
+      fullName,
+      email,
+      phone,
+      password,
+      countryId,
+      gender,
+      dateOfBirth,
+      address,
+      bio
+    } = req.body;
 
-    if (!email || !password || !countryId) {
-      return res
-        .status(400)
-        .json({ message: "Email, password và countryId là bắt buộc" });
+    if (!fullName || !email || !password || !countryId) {
+      return res.status(400).json({ message: "Thiếu thông tin bắt buộc" });
     }
 
     // Tạo account ORG
     const { volunteer } = await register({
-      fullName: `ORG-${email}`,
+      fullName,
       email,
+      phone,
       password,
       countryId,
-      role: "ORG"
+      gender,
+      dateOfBirth,
+      address,
+      bio,
+      role: "ORG",
+      isActive: true
     });
 
     // Tạo participation cho tổ chức
@@ -412,6 +443,37 @@ export const approveEvent = async (req, res) => {
     where: { id },
     data: { isApproved: true }
   });
+
+  // Gửi thông báo cho tất cả tình nguyện viên khi hoạt động được duyệt
+  try {
+    const notification = await prisma.notification.create({
+      data: {
+        eventId: id,
+        title: `Hoạt động mới được duyệt: ${updated.title}`,
+        content: `Hoạt động "${updated.title}" đã được duyệt. Hãy tham gia nếu bạn quan tâm!`,
+        type: "EVENT"
+      }
+    });
+
+    // Gửi đến tất cả tình nguyện viên hoạt động
+    const volunteers = await prisma.volunteer.findMany({
+      where: { isActive: true },
+      select: { id: true }
+    });
+
+    if (volunteers.length > 0) {
+      const notificationUsers = volunteers.map(v => ({
+        userId: v.id,
+        notificationId: notification.id,
+        isRead: false
+      }));
+      await prisma.notificationUser.createMany({ data: notificationUsers });
+    }
+  } catch (err) {
+    console.error("Gửi thông báo duyệt hoạt động thất bại:", err.message);
+    // Không dừng API nếu gửi thông báo lỗi
+  }
+
   res.json(updated);
 };
 
@@ -473,15 +535,39 @@ export const getRecentEvents = async (req, res) => {
 
 export const getEventsByMonth = async (req, res) => {
   try {
-    const rawData = await prisma.$queryRaw`
-      SELECT EXTRACT(MONTH FROM "startDate") AS month, COUNT(*) AS count
-      FROM "EVENT"
-      GROUP BY EXTRACT(MONTH FROM "startDate")
-      ORDER BY month
-    `;
-    const data = rawData.map(function(item) {
-      return { month: Number(item.month), count: Number(item.count) };
+    // Get all events with their start dates
+    const events = await prisma.event.findMany({
+      select: {
+        id: true,
+        startDate: true,
+        title: true
+      },
+      where: {
+        startDate: {
+          not: null
+        }
+      }
     });
+
+    // Count events by month
+    const monthCounts = {};
+    for (let m = 1; m <= 12; m++) {
+      monthCounts[m] = 0;
+    }
+
+    events.forEach(event => {
+      if (event.startDate) {
+        const month = new Date(event.startDate).getMonth() + 1; // getMonth() returns 0-11
+        monthCounts[month]++;
+      }
+    });
+
+    // Format response
+    const data = [];
+    for (let m = 1; m <= 12; m++) {
+      data.push({ month: m, count: monthCounts[m] });
+    }
+
     res.json(data);
   } catch (err) {
     res.status(500).json({ message: err.message });

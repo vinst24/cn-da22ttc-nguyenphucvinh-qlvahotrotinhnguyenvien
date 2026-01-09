@@ -5,7 +5,10 @@ export default function AddOrganizationForm({
   orgData,
   setOrgData,
   onSubmit,
-  onCancel
+  onCancel,
+  countries = [],
+  selectedCountryId,
+  setSelectedCountryId
 }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showRepeatPassword, setShowRepeatPassword] = useState(false);
@@ -57,6 +60,21 @@ export default function AddOrganizationForm({
           <option value="COMMUNITY">Community</option>
           <option value="ENVIRONMENTAL">Environmental</option>
           <option value="OTHER">Other</option>
+        </select>
+
+        {/* Country */}
+        <select
+          value={selectedCountryId || ""}
+          onChange={function(e) {
+            const val = e.target.value ? Number(e.target.value) : null;
+            if (setSelectedCountryId) setSelectedCountryId(val);
+          }}
+          className="border border-gray-300 rounded px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+        >
+          <option value="">Chọn quốc gia</option>
+          {countries && countries.map(c => (
+            <option key={c.id} value={c.id}>{c.name}</option>
+          ))}
         </select>
 
         {/* Email */}

@@ -35,7 +35,8 @@ export const register = async ({
   dateOfBirth,
   countryId,
   address,
-  role = "MEMBER"
+  role = "MEMBER",
+  isActive = false
 }) => {
   const existing = await prisma.volunteer.findUnique({
     where: { email }
@@ -65,7 +66,8 @@ export const register = async ({
       gender,
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : null,
       address,
-      role: "MEMBER",
+      role: role || "MEMBER",
+      isActive: isActive === true,
 
       country: {
         connect: {
